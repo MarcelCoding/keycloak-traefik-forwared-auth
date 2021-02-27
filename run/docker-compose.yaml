@@ -1,0 +1,20 @@
+version: '3.9'
+
+services:
+  keycloak:
+    image: jboss/keycloak:latest
+    restart: always
+    environment:
+      - "KEYCLOAK_USER=admin"
+      - "KEYCLOAK_PASSWORD=admin"
+      - "DB_VENDOR=POSTGRES"
+      - "DB_ADDR=192.168.178.28"
+      - "DB_DATABASE=keycloak"
+      - "DB_USER=root"
+      - "DB_SCHEMA=public"
+      - "DB_PASSWORD=root"
+    volumes:
+      - "../build/libs:/opt/jboss/keycloak/standalone/deployments"
+    ports:
+      - 8080:8080
+      - 9990:9990
