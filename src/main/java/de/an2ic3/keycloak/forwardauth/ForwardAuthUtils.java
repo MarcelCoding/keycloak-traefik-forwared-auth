@@ -1,4 +1,4 @@
-package com.github.marcelcoding.keycloak.forwardauth;
+package de.an2ic3.keycloak.forwardauth;
 
 import java.net.URI;
 import java.net.URISyntaxException;

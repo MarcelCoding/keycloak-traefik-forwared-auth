@@ -8,7 +8,7 @@ plugins {
     id 'com.github.spotbugs' version '4.6.2'
 }
 
-group 'com.github.marcelcoding.keycloak'
+group 'de.an2ic3.keycloak'
 
 sourceCompatibility = targetCompatibility = JavaVersion.VERSION_11
 
@@ -55,10 +55,10 @@ jar {
     manifest.attributes([
             'Specification-Title'     : project.name,
             'Specification-Version'   : project.version,
-            'Specification-Vendor'    : 'Marcel Coding (https://github.com/MarcelCoding)',
+            'Specification-Vendor'    : 'an2ic3 Keycloak Team (https://github.com/an2ic3)',
             'Implementation-Title'    : project.name,
             'Implementation-Version'  : project.version,
-            'Implementation-Vendor'   : 'Marcel Coding (https://github.com/MarcelCoding)',
+            'Implementation-Vendor'   : 'an2ic3 Keycloak Team (https://github.com/an2ic3)',
             'Implementation-Timestamp': new Date().format('yyyy-MM-dd\'T\'HH:mm:ssZ')
     ])
 }
