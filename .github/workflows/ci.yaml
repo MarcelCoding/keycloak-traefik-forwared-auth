@@ -108,3 +108,30 @@ jobs:
         with:
           name: keycloak-traefik-forwarded-auth
           path: build/libs
+
+  publish:
+    needs: [ build ]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: keycloak-traefik-forwarded-auth
+          path: keycloak-traefik-forwarded-auth
+
+      - name: Publish
+        uses: JamesIves/github-pages-deploy-action@4.1.0
+        with:
+          repository-name: ${{ format('{0}/keycloak-docker', github.repository_owner) }}
+          branch: main # The branch the action should deploy to.
+          folder: keycloak-traefik-forwarded-auth # The folder the action should deploy.
+          target-folder: extensions
+          clean: false
+
+          token: ${{ secrets.GH_PAT_PACKAGES }}
+          # https://github.com/crazy-max/ghaction-github-pages/blob/dev/src/git.ts#L3-L8
+          commit-message: Publish ${{ github.repository }}
+          git-config-name: github-actions[bot]
+          git-config-email: 41898282+github-actions[bot]@users.noreply.github.com
