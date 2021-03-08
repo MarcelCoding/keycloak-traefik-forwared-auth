@@ -16,6 +16,7 @@ import org.keycloak.models.UserModel;
 public final class ForwardAuthUtils {
 
   private static final String X_FORWARDED_HOST = "X-Forwarded-Host";
+  private static final String X_FORWARDED_URI = "X-Forwarded-Uri";
   private static final String CF_CONNECTION_IP = "Cf-Connecting-Ip";
   private static final String X_FORWARDED_FOR = "X-Forwarded-For";
 
@@ -27,7 +28,11 @@ public final class ForwardAuthUtils {
     return Optional.ofNullable(headers.getHeaderString(X_FORWARDED_HOST));
   }
 
-  public static Optional<String> getId(final HttpHeaders headers) {
+  public static Optional<String> getUri(final HttpHeaders headers) {
+    return Optional.ofNullable(headers.getHeaderString(X_FORWARDED_URI));
+  }
+
+  public static Optional<String> getIp(final HttpHeaders headers) {
     return Optional.ofNullable(headers.getHeaderString(CF_CONNECTION_IP)) // cloudflare proxy
         .or(() -> Optional.ofNullable(headers.getHeaderString(X_FORWARDED_FOR)));
   }

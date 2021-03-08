@@ -9,8 +9,8 @@ public class ForwardAuthResourceProvider implements RealmResourceProvider {
 
   private final ForwardAuthResource resource;
 
-  public ForwardAuthResourceProvider(final KeycloakSession session) {
-    this.resource = new ForwardAuthResource(session);
+  public ForwardAuthResourceProvider(final String publicUrl, final KeycloakSession session) {
+    this.resource = new ForwardAuthResource(publicUrl, session);
   }
 
   @Override
