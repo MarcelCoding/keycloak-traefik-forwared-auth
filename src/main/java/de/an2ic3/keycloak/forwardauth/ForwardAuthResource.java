@@ -1,5 +1,6 @@
 package de.an2ic3.keycloak.forwardauth;
 
+import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
@@ -37,16 +38,12 @@ public class ForwardAuthResource {
   public Response ip(
       @Context final HttpHeaders headers
   ) {
-    if (this.publicUrl == null) {
-      return Response.status(Status.INTERNAL_SERVER_ERROR)
-          .entity("Please finish server configuration, see logs!")
-          .build();
-    }
-
-    final Optional<String> host = ForwardAuthUtils.getHost(headers);
-    if (host.isEmpty()) {
+    final Optional<String> optionalHost = ForwardAuthUtils.getHost(headers);
+    if (optionalHost.isEmpty()) {
       return Response.status(Status.BAD_REQUEST).entity("Missing X-Forwarded-Host header").build();
     }
+
+    final String host = optionalHost.get();
 
     final Optional<String> optionalIp = ForwardAuthUtils.getIp(headers);
     if (optionalIp.isEmpty()) {
@@ -56,12 +53,12 @@ public class ForwardAuthResource {
     final Set<RoleModel> roles = this.session.getContext()
         .getRealm()
         .getClientsStream()
-        .filter(client -> ForwardAuthUtils.clientFilter(client, host.get()))
+        .filter(client -> client.getClientId().equals(host))
         .flatMap(ClientModel::getRolesStream)
         .collect(Collectors.toSet());
 
     if (roles.isEmpty()) {
-      log.warn("No client with associated roles for host \"{}\" found.", host.get());
+      log.warn("No client with associated roles for host \"{}\" found.", host);
       return Response.status(Status.NOT_FOUND).entity("See logs").build();
     }
 
@@ -89,35 +86,37 @@ public class ForwardAuthResource {
           .build();
     }
 
-    final Optional<String> host = ForwardAuthUtils.getHost(headers);
-    if (host.isEmpty()) {
+    final Optional<String> optionalHost = ForwardAuthUtils.getHost(headers);
+    if (optionalHost.isEmpty()) {
       return Response.status(Status.BAD_REQUEST).entity("Missing X-Forwarded-Host header").build();
     }
+
+    final String host = optionalHost.get();
 
     final RealmModel realm = this.session.getContext().getRealm();
 
     final Set<ClientModel> clients = realm
         .getClientsStream()
-        .filter(client -> ForwardAuthUtils.clientFilter(client, host.get()))
+        .filter(client -> client.getClientId().equals(host))
         .collect(Collectors.toSet());
 
     if (clients.isEmpty()) {
-      log.warn("No associated client for host \"{}\" found.", host.get());
+      log.warn("No associated client for host \"{}\" found.", host);
       return Response.status(Status.NOT_FOUND).entity("See logs").build();
     }
 
     if (clients.size() != 1) {
-      log.warn("To many clients for host \"{}\" found.", host.get());
+      log.warn("To many clients for host \"{}\" found.", host);
       return Response.status(Status.INTERNAL_SERVER_ERROR).entity("See logs").build();
     }
 
     final ClientModel client = clients.stream().findFirst().get();
 
     if (idToken == null) {
-      final Optional<String> referUri = ForwardAuthUtils.getUri(headers);
+      final Optional<URL> referUri = ForwardAuthUtils.getUrl(headers);
 
       if (referUri.isEmpty()) {
-        return Response.status(Status.BAD_REQUEST).entity("Missing X-Forwarded-Uri header").build();
+        return Response.status(Status.BAD_REQUEST).entity("Missing X-Forwarded-* headers").build();
       }
 
       final String uri = String.format(
@@ -131,7 +130,7 @@ public class ForwardAuthResource {
           this.publicUrl,
           URLEncoder.encode(realm.getId(), StandardCharsets.US_ASCII),
           URLEncoder.encode(client.getClientId(), StandardCharsets.US_ASCII),
-          URLEncoder.encode(referUri.get(), StandardCharsets.US_ASCII)
+          URLEncoder.encode(referUri.get().toString(), StandardCharsets.US_ASCII)
       );
 
       return Response.status(Status.FOUND)
