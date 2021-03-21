@@ -1,16 +1,19 @@
-plugins {
-    id 'java'
-    id 'io.freefair.lombok' version '5.3.0'
-    id 'io.freefair.git-version' version '5.3.0'
-
-    id 'pmd'
-    id 'checkstyle'
-    id 'com.github.spotbugs' version '4.7.0'
+buildscript {
+    ext {
+        freefairVersion = '5.3.0'
+        keycloakVersion = '12.0.4'
+        junitVersion = '5.7.1'
+        autoServiceVersion = '1.0-rc7'
+    }
 }
 
-group 'de.an2ic3.keycloak'
-
-sourceCompatibility = targetCompatibility = JavaVersion.VERSION_11
+plugins {
+    id 'base'
+    id 'nebula.project' version '8.0.0' apply false
+    id 'com.github.spotbugs' version '4.7.0' apply false
+    id 'io.freefair.git-version' version "${freefairVersion}"
+    id 'io.freefair.lombok' version "${freefairVersion}" apply false
+}
 
 if (version.toString().endsWith('SNAPSHOT')) {
     version = 'edge'
@@ -18,82 +21,87 @@ if (version.toString().endsWith('SNAPSHOT')) {
     version = version.toString().substring(1)
 }
 
-repositories {
-    mavenCentral()
+allprojects {
+    group 'de.an2ic3.keycloak'
 }
 
-ext {
-    keycloakVersion = '12.0.4'
-    junitVersion = '5.7.1'
-    autoServiceVersion = '1.0-rc7'
-}
+subprojects {
+    apply plugin: 'pmd'
+    apply plugin: 'java'
+    apply plugin: 'checkstyle'
+    apply plugin: 'nebula.project'
+    apply plugin: 'io.freefair.lombok'
+    apply plugin: 'com.github.spotbugs'
 
-dependencies {
-    // compileOnly "org.keycloak:keycloak-core:${keycloakVersion}"
-    compileOnly "org.keycloak:keycloak-server-spi:${keycloakVersion}"
-    compileOnly "org.keycloak:keycloak-server-spi-private:${keycloakVersion}"
-    compileOnly "org.keycloak:keycloak-services:${keycloakVersion}"
+    version rootProject.version
 
-    compileOnly "com.google.auto.service:auto-service-annotations:${autoServiceVersion}"
-    annotationProcessor "com.google.auto.service:auto-service:${autoServiceVersion}"
-
-    testImplementation "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
-}
-
-test {
-    useJUnitPlatform()
-}
-
-jar {
-    from "${rootDir}/LICENSE"
-    manifest.attributes([
-            'Specification-Title'     : project.name,
-            'Specification-Version'   : project.version,
-            'Specification-Vendor'    : 'an2ic3 Keycloak Team (https://github.com/an2ic3)',
-            'Implementation-Title'    : project.name,
-            'Implementation-Version'  : project.version,
-            'Implementation-Vendor'   : 'an2ic3 Keycloak Team (https://github.com/an2ic3)',
-            'Implementation-Timestamp': new Date().format('yyyy-MM-dd\'T\'HH:mm:ssZ')
-    ])
-}
-
-tasks.withType(JavaCompile) {
-    doFirst {
-        options.encoding = 'UTF-8'
+    repositories {
+        mavenCentral()
     }
-}
 
-lombok {
-    config.put('lombok.equalsandhashcode.callsuper', 'CALL')
-    config.put('lombok.tostring.callsuper', 'CALL')
-}
+    sourceCompatibility = targetCompatibility = JavaVersion.VERSION_11
 
-tasks.withType(Checkstyle) {
-    exclude('**/module-info.java')
-    ignoreFailures = true
-    reports {
-        xml.enabled(true)
-        html.enabled(false)
+    dependencies {
+//        testImplementation "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
+//        testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
     }
-}
 
-checkstyleMain {
-    configFile = file("${rootDir}/config/checkstyle/main.xml")
-}
-
-checkstyleTest {
-    configFile = file("${rootDir}/config/checkstyle/test.xml")
-}
-
-tasks.withType(Pmd) {
-    ignoreFailures = true
-    reports {
-        xml.enabled(true)
-        html.enabled(false)
+    test {
+        useJUnitPlatform()
     }
-}
 
-spotbugs {
-    ignoreFailures = true
+    jar {
+        from "${rootDir}/LICENSE"
+        manifest.attributes([
+                'Specification-Title'     : project.name,
+                'Specification-Vendor'    : 'Nova Project (https://github.com/getnova)',
+                'Specification-Version'   : project.version,
+                'Implementation-Vendor'   : 'Nova Project (https://github.com/getnova)',
+                'Implementation-Timestamp': new Date().format('yyyy-MM-dd\'T\'HH:mm:ssZ')
+        ])
+
+        excludes += '.gitkeep'
+    }
+
+    lombok {
+        config.put('lombok.equalsandhashcode.callsuper', 'CALL')
+        config.put('lombok.tostring.callsuper', 'CALL')
+    }
+
+    tasks.withType(JavaCompile) {
+        doFirst {
+            options.encoding = 'UTF-8'
+        }
+    }
+
+    tasks.withType(Javadoc).all { enabled = false }
+
+    tasks.withType(Checkstyle) {
+        exclude('**/module-info.java')
+        ignoreFailures = true
+        reports {
+            xml.enabled(true)
+            html.enabled(false)
+        }
+    }
+
+    checkstyleMain {
+        configFile = file("${rootDir}/config/checkstyle/main.xml")
+    }
+
+    checkstyleTest {
+        configFile = file("${rootDir}/config/checkstyle/test.xml")
+    }
+
+    tasks.withType(Pmd) {
+        ignoreFailures = true
+        reports {
+            xml.enabled(true)
+            html.enabled(false)
+        }
+    }
+
+    spotbugs {
+        ignoreFailures = true
+    }
 }

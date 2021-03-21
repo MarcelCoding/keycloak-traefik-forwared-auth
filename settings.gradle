@@ -1,2 +1,3 @@
-rootProject.name = 'keycloak-traefik-forwarded-auth'
+rootProject.name = 'keycloak-docker'
+include 'keycloak-traefik-forward-auth'
 

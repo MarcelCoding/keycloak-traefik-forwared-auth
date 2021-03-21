@@ -8,6 +8,7 @@ on:
 
 env:
   JAVA_VERSION: 11
+  IMAGE_NAME: an2ic3/keycloak
 
 jobs:
   lint:
@@ -21,7 +22,7 @@ jobs:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
 
@@ -54,6 +55,10 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        java-version: [ 11, 15 ]
+
     steps:
       - uses: actions/checkout@v2
 
@@ -62,14 +67,14 @@ jobs:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      - name: Set up JDK ${{ env.JAVA_VERSION }}
+      - name: Set up JDK ${{ matrix.java-version }}
         uses: actions/setup-java@v1
         with:
-          java-version: ${{ env.JAVA_VERSION }}
+          java-version: ${{ matrix.java-version }}
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
@@ -89,7 +94,7 @@ jobs:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
 
@@ -102,36 +107,71 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build with Gradle
-        run: ./gradlew assemble --stacktrace --no-daemon
+        run: ./gradlew jar --stacktrace --no-daemon
 
       - uses: actions/upload-artifact@v2
         with:
-          name: keycloak-traefik-forwarded-auth
-          path: build/libs
+          name: keycloak-extentions
+          path: '**/build/libs/**'
 
-  publish:
+  docker:
     needs: [ build ]
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v2
 
+      - name: Docker meta
+        id: docker_meta
+        uses: crazy-max/ghaction-docker-meta@v1
+        with:
+          tag-edge: true
+          images: ghcr.io/${{ env.IMAGE_NAME }}
+          tag-semver: |
+            {{version}}
+            {{major}}.{{minor}}
+            {{major}}
+
+      - uses: docker/setup-qemu-action@v1
+      - uses: docker/setup-buildx-action@v1
+
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        if: ${{ github.event_name != 'pull_request' }}
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GH_PAT_PACKAGES }}
+
       - uses: actions/download-artifact@v2
         with:
-          name: keycloak-traefik-forwarded-auth
-          path: keycloak-traefik-forwarded-auth
+          name: keycloak-extentions
 
-      - name: Publish
-        uses: JamesIves/github-pages-deploy-action@4.1.0
+      - name: Build
+        uses: docker/build-push-action@v2
         with:
-          repository-name: ${{ format('{0}/keycloak-docker', github.repository_owner) }}
-          branch: main # The branch the action should deploy to.
-          folder: keycloak-traefik-forwarded-auth # The folder the action should deploy.
-          target-folder: extensions
-          clean: false
+          context: .
+          file: ./docker/Dockerfile.github-actions
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.docker_meta.outputs.tags }}
+          labels: ${{ steps.docker_meta.outputs.labels }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new
 
-          token: ${{ secrets.GH_PAT_PACKAGES }}
-          # https://github.com/crazy-max/ghaction-github-pages/blob/dev/src/git.ts#L3-L8
-          commit-message: Publish ${{ github.repository }}
-          git-config-name: github-actions[bot]
-          git-config-email: 41898282+github-actions[bot]@users.noreply.github.com
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+      - name: Check manifest
+        if: ${{ github.event_name != 'pull_request' }}
+        run: |
+          docker buildx imagetools inspect ghcr.io/${{ env.IMAGE_NAME }}:${{ steps.docker_meta.outputs.version }}
