@@ -1,4 +1,4 @@
-# Keycloak Docker
+# Keycloak Extensions
 
 This is a collections of keycloak extensions, and a docker image with all extensions pre-installed.
 
