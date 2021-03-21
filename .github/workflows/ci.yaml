@@ -107,12 +107,12 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build with Gradle
-        run: ./gradlew jar --stacktrace --no-daemon
+        run: ./gradlew jar --stacktrace --no-daemon && mkdir -p dist && find ./ -iwholename '.*/build/libs/*.jar' -exec mv '{}' ./dist \;
 
       - uses: actions/upload-artifact@v2
         with:
           name: keycloak-extentions
-          path: '**/build/libs/**'
+          path: 'dist/*.jar'
 
   docker:
     needs: [ build ]
@@ -154,6 +154,7 @@ jobs:
       - uses: actions/download-artifact@v2
         with:
           name: keycloak-extentions
+          path: dist
 
       - name: Build
         uses: docker/build-push-action@v2
