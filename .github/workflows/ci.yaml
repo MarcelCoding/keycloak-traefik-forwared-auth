@@ -132,7 +132,6 @@ jobs:
             {{major}}.{{minor}}
             {{major}}
 
-      - uses: docker/setup-qemu-action@v1
       - uses: docker/setup-buildx-action@v1
 
       - name: Cache Docker layers
