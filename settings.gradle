@@ -1,3 +1,6 @@
-rootProject.name = 'keycloak-docker'
-include 'keycloak-traefik-forward-auth'
+rootProject.name = 'keycloak-extensions'
+include(
+        'keycloak-traefik-forward-auth',
+        'keycloak-container-ssh'
+)
 

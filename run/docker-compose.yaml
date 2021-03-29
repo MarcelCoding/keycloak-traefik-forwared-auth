@@ -14,7 +14,8 @@ services:
       - "DB_SCHEMA=public"
       - "DB_PASSWORD=root"
     volumes:
-      - "../build/libs:/opt/jboss/keycloak/standalone/deployments"
+      - "../keycloak-traefik-forward-auth/build/libs/keycloak-traefik-forward-auth-edge.jar:/opt/jboss/keycloak/standalone/deployments/forward-auth.jar:ro"
+      - "../keycloak-container-ssh/build/libs/keycloak-container-ssh-edge.jar:/opt/jboss/keycloak/standalone/deployments/ssh.jar:ro"
     ports:
       - 8082:8080
       - 9990:9990
