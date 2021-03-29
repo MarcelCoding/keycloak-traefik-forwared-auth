@@ -11,9 +11,9 @@ public class ContainerSshPubKeyRequest {
   private final String publicKey;
 
   public ContainerSshPubKeyRequest(
-      @JsonProperty("username") String username,
-      @JsonProperty("remoteAddress") String remoteAddress,
-      @JsonProperty("publicKey") String publicKey
+      @JsonProperty("username") final String username,
+      @JsonProperty("remoteAddress") final String remoteAddress,
+      @JsonProperty("publicKey") final String publicKey
   ) {
     this.username = username;
     this.remoteAddress = remoteAddress;
