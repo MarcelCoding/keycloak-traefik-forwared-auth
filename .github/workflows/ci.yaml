@@ -8,6 +8,7 @@ on:
 
 env:
   JAVA_VERSION: 11
+  JAVA_DISTRO: adopt
   IMAGE_NAME: an2ic3/keycloak
 
 jobs:
@@ -27,9 +28,10 @@ jobs:
             ${{ runner.os }}-gradle-
 
       - name: Set up JDK ${{ env.JAVA_VERSION }}
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v2
         with:
           java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRO }}
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
@@ -72,9 +74,10 @@ jobs:
             ${{ runner.os }}-gradle-
 
       - name: Set up JDK ${{ matrix.java-version }}
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v2
         with:
           java-version: ${{ matrix.java-version }}
+          distribution: ${{ env.JAVA_DISTRO }}
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
@@ -99,9 +102,10 @@ jobs:
             ${{ runner.os }}-gradle-
 
       - name: Set up JDK ${{ env.JAVA_VERSION }}
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v2
         with:
           java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRO }}
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
