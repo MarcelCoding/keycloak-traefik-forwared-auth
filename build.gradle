@@ -3,7 +3,7 @@ buildscript {
         freefairVersion = '5.3.3.3'
         keycloakVersion = '12.0.4'
         junitVersion = '5.7.1'
-        autoServiceVersion = '1.0-rc7'
+        autoServiceVersion = '1.0'
     }
 }
 
