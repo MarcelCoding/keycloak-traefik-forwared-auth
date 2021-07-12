@@ -115,7 +115,7 @@ jobs:
 
       - uses: actions/upload-artifact@v2
         with:
-          name: keycloak-extentions
+          name: keycloak-extensions
           path: 'dist/*.jar'
 
   docker:
@@ -156,7 +156,7 @@ jobs:
 
       - uses: actions/download-artifact@v2
         with:
-          name: keycloak-extentions
+          name: keycloak-extensions
           path: dist
 
       - name: Build
