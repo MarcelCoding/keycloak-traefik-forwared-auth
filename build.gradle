@@ -54,9 +54,9 @@ subprojects {
         from "${rootDir}/LICENSE"
         manifest.attributes([
                 'Specification-Title'     : project.name,
-                'Specification-Vendor'    : 'Nova Project (https://github.com/getnova)',
+                'Specification-Vendor'    : 'an2ic3 (https://github.com/an2ic3)',
                 'Specification-Version'   : project.version,
-                'Implementation-Vendor'   : 'Nova Project (https://github.com/getnova)',
+                'Implementation-Vendor'   : 'an2ic3 (https://github.com/an2ic3)',
                 'Implementation-Timestamp': new Date().format('yyyy-MM-dd\'T\'HH:mm:ssZ')
         ])
 
