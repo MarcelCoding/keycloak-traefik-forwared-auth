@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        freefairVersion = '5.3.3.3'
+        freefairVersion = '6.1.0'
         keycloakVersion = '15.0.1'
         junitVersion = '5.7.1'
         autoServiceVersion = '1.0'
